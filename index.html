@@ -20,6 +20,8 @@
     display:flex; flex-direction:column; align-items:center;
   }
   .wrap{width:100%; max-width:760px; padding:18px 16px 40px; flex:1}
+  /* 主持人公布頁在大螢幕用更寬的橫向版面 */
+  body.host-wide .wrap{max-width:1100px}
   h1{font-size:1.45rem; margin:.2em 0 .1em; letter-spacing:.5px}
   .sub{color:var(--muted); font-size:.92rem; margin:0 0 18px}
   .card{background:linear-gradient(180deg,var(--card),#1c2348);
@@ -49,10 +51,10 @@
   .answers{display:flex; justify-content:center; flex-wrap:wrap; gap:26px}
   @media(max-width:480px){ .q{font-size:1.2rem} }
   .ans{display:flex; flex-direction:column; align-items:center; justify-content:center;
-    width:156px; height:156px; border-radius:50%; text-align:center; gap:6px;
-    font-size:1.05rem; font-weight:800; color:#fff; padding:14px; line-height:1.2}
-  .ans .ic{font-size:2.2rem; flex:0 0 auto}
-  @media(max-width:480px){ .ans{width:132px; height:132px; font-size:.92rem} }
+    width:188px; height:188px; border-radius:50%; text-align:center; gap:6px;
+    font-size:1.05rem; font-weight:800; color:#fff; padding:16px; line-height:1.2; word-break:keep-all}
+  .ans .ic{font-size:2.4rem; flex:0 0 auto}
+  @media(max-width:480px){ .ans{width:158px; height:158px; font-size:.95rem} }
   .ans.A{background:#f2f4fb; color:#15203a} .ans.B{background:var(--red)}
   .ans.C{background:var(--yellow); color:#241c00} .ans.D{background:var(--green)}
   .ans.dim{opacity:.35} .ans.pick{outline:4px solid #fff; outline-offset:2px}
@@ -158,6 +160,14 @@
   .videowrap iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
   /* 影片判讀：不限時作答，隱藏計時器；主持人不顯示選項鈕（公布頁只留百分比長條） */
   #play-timer,#play-bar,#host-timer,#host-bar,#host-answers,#hr-answers{display:none}
+  .disputed{color:var(--accent); font-weight:800; font-size:1.02rem; margin-bottom:6px}
+  /* 公布頁左右兩欄（影片 ｜ 題目+判決比例） */
+  .reveal-cols{display:flex; gap:24px; align-items:flex-start; margin-top:6px}
+  .reveal-left{flex:1 1 58%; min-width:0}
+  .reveal-right{flex:1 1 42%; min-width:0}
+  .reveal-right .q{margin-top:0}
+  .reveal-right .dist{margin-top:10px}
+  @media(max-width:760px){ .reveal-cols{flex-direction:column; gap:14px} }
 </style>
 </head>
 <body>
@@ -267,25 +277,37 @@
     <!-- 主持人：題目進行中 -->
     <div id="host-live" class="hidden">
       <span class="tag">第 <b id="host-qn">1</b> / <b id="host-qt">1</b> 題 · <span id="host-sec"></span></span>
-      <div class="videowrap" id="host-video"></div>
-      <div class="timer" id="host-timer">25</div>
-      <div class="timerbar"><i id="host-bar"></i></div>
-      <div class="q" id="host-q"></div>
-      <div class="answers" id="host-answers"></div>
-      <div class="big" id="host-answered" style="font-size:1.1rem; color:var(--muted)">0 人已作答</div>
-      <div class="hostbar">
-        <button id="btn-reveal">公布答案</button>
+      <div class="reveal-cols">
+        <div class="reveal-left">
+          <div class="videowrap" id="host-video"></div>
+        </div>
+        <div class="reveal-right">
+          <div class="timer" id="host-timer">25</div>
+          <div class="timerbar"><i id="host-bar"></i></div>
+          <div class="q" id="host-q"></div>
+          <div class="answers" id="host-answers"></div>
+          <div class="big" id="host-answered" style="font-size:1.1rem; color:var(--muted)">0 人已作答</div>
+          <div class="hostbar">
+            <button id="btn-reveal">公布答案</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 主持人：公布答案 -->
     <div id="host-reveal" class="hidden">
       <span class="tag">第 <b id="hr-qn">1</b> / <b id="hr-qt">1</b> 題 · 答案揭曉</span>
-      <div class="videowrap" id="hr-video"></div>
-      <div class="q" id="hr-q"></div>
-      <div class="answers" id="hr-answers"></div>
-      <div class="dist" id="hr-dist"></div>
-      <div class="note" id="hr-note"></div>
+      <div class="reveal-cols">
+        <div class="reveal-left">
+          <div class="videowrap" id="hr-video"></div>
+        </div>
+        <div class="reveal-right">
+          <div class="q" id="hr-q"></div>
+          <div class="answers" id="hr-answers"></div>
+          <div class="dist" id="hr-dist"></div>
+          <div class="note" id="hr-note"></div>
+        </div>
+      </div>
       <div class="hostbar">
         <button id="btn-showboard" class="btn-ghost">看排行榜</button>
         <button id="btn-next">下一題 →</button>
@@ -294,7 +316,7 @@
   </section>
 
   <footer>
-    GOOD or NO LIFT 影片判讀 · 教學用 · 影片判定依 IWF TCRR 2025
+    舉重案例判讀 · 教學用 · 影片判定依 IWF TCRR 2025<br>Copyright © 2026 Jessie Lan</div>
   </footer>
 </div>
 
@@ -407,6 +429,20 @@ function setVideo(elId, v){
   else { el.style.display="none"; el.innerHTML=""; }
 }
 
+// ---- 爭議案例：題目的 answer 設成 "dispute" 即無標準答案 ----
+function disputed(Q){ return Q.answer === "dispute"; }
+function revealNoteHTML(Q){
+  let html = "";
+  if(disputed(Q)){
+    html += '<div class="disputed">⚖️ 爭議案例 · 無標準答案，開放討論</div>';
+    if(Q.actual === 0 || Q.actual === 1){
+      html += '<div style="margin:4px 0">影片當時實際判定：<b>' + esc(Q.options[Q.actual]) + '</b></div>';
+    }
+  }
+  if(Q.note) html += '<div>' + esc(Q.note) + '</div>';
+  return html;
+}
+
 // ---- 共用：作答百分比長條圖 ----
 function renderDist(container, qi, Q){
   if(!container) return;
@@ -508,8 +544,8 @@ function submitAnswer(qi, choice, Q, btnEl){
   const start = state.startAt || now();
   const dt = Math.max(0, now() - start);
   const correct = (choice === Q.answer);
-  // 不限時：答對固定 1000 分，答錯 0
-  let gained = correct ? 1000 : 0;
+  // 不限時：答對固定 100 分，答錯 0
+  let gained = correct ? 100 : 0;
   gameRef.child("answers/"+qi+"/"+me.id).set({ choice, dt, correct, gained });
   if(gained > 0) gameRef.child("players/"+me.id+"/score").transaction(v => (v||0) + gained);
   lockAnswers(choice);
@@ -532,22 +568,26 @@ function renderPlayReveal(){
   show("reveal");
   $("rev-sec").textContent = Q.sec;
   $("rev-q").textContent = Q.q;
-  $("rev-note").textContent = Q.note || "";
+  $("rev-note").innerHTML = revealNoteHTML(Q);
   const box = $("rev-answers"); box.innerHTML = "";
   Q.options.forEach((opt,i) => {
     const d = document.createElement("div");
     d.className = "ans " + LETTERS[i];
-    if(i === Q.answer) d.classList.add("correct"); else d.classList.add("dim");
+    if(!disputed(Q)){ if(i === Q.answer) d.classList.add("correct"); else d.classList.add("dim"); }
     d.innerHTML = `<span class="ic">${ICONS[i]}</span><span>${opt}</span>`;
     box.appendChild(d);
   });
   renderDist($("rev-dist"), qi, Q);
-  gameRef.child("answers/"+qi+"/"+me.id).once("value", s => {
-    const a = s.val();
-    if(a && a.correct){ $("rev-result").innerHTML = `✅ 答對了！ <span style="color:var(--good)">+${a.gained}</span>`; }
-    else if(a){ $("rev-result").innerHTML = `❌ 答錯了`; }
-    else { $("rev-result").innerHTML = `⏱️ 未作答`; }
-  });
+  if(disputed(Q)){
+    $("rev-result").innerHTML = `⚖️ 爭議案例 · 開放討論`;
+  } else {
+    gameRef.child("answers/"+qi+"/"+me.id).once("value", s => {
+      const a = s.val();
+      if(a && a.correct){ $("rev-result").innerHTML = `✅ 答對了！ <span style="color:var(--good)">+${a.gained}</span>`; }
+      else if(a){ $("rev-result").innerHTML = `❌ 答錯了`; }
+      else { $("rev-result").innerHTML = `⏱️ 未作答`; }
+    });
+  }
 }
 
 // =====================================================================
@@ -639,6 +679,7 @@ function doReveal(){ gameRef.child("meta").update({ state:"reveal" }); }
 
 function renderHost(){
   if(!me.isHost) return;
+  document.body.classList.add("host-wide");   // 主持人大螢幕用寬版
   show("host");
   const st = state.state || "lobby";
   $("host-lobby").classList.toggle("hidden", st!=="lobby");
@@ -663,7 +704,7 @@ function renderHost(){
   }
   if(st==="reveal" && Q){
     $("hr-qn").textContent = qi+1; $("hr-q").textContent = Q.q;
-    $("hr-note").textContent = Q.note || "";
+    $("hr-note").innerHTML = revealNoteHTML(Q);
     setVideo("hr-video", Q.video);
     fillStaticAnswers($("hr-answers"), Q, true);
     renderDist($("hr-dist"), qi, Q);
